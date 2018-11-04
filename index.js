@@ -51,7 +51,8 @@ module.exports = function(source) {
     if (query.noShortcut) {
         suffix = 'return T; }();';
     } else if (query.render) {
-        suffix = 'return T.render(' + JSON.stringify(render) + ');};';
+        suffix = 'var data = Object.assign({}, ' + JSON.stringify(render) + ', context);' +
+            'return T.render.call(T, data, partials, indent, rest);};';
     } else {
         suffix = 'return T.render.apply(T, arguments); };';
     }
@@ -63,14 +64,14 @@ module.exports = function(source) {
     }
     if (query.tiny) {
         return 'var H = require("hogan.js");\n' +
-            'module.exports = function() { ' +
+            'module.exports = function(context, partials, indent, rest) { ' +
              'var T = new H.Template(' +
             Hogan.compile(source, hoganOpts) +
             ');' + suffix;
     }
 
     return 'var H = require("hogan.js");\n' +
-           'module.exports = function() { ' +
+        'module.exports = function(context, partials, indent, rest) { ' +
            'var T = new H.Template(' +
            Hogan.compile(source, hoganOpts) +
            ', ' +
